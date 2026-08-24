@@ -2,9 +2,10 @@
 
 Durable Objects give a steward continuity. Workflows give its work continuity.
 
-Cloudflare implementation substrate for [joshuaboys/steward](https://github.com/joshuaboys/steward).
-The domain model is Cloudflare-independent; the Worker / Durable Object /
-Workflow bindings are adapters.
+Cloudflare implementation substrate. The domain model is Cloudflare-independent;
+the Worker / Durable Object / Workflow bindings are adapters.
+
+Spec: [docs/cloudflare-runtime.md](docs/cloudflare-runtime.md)
 
 ## Mapping
 
@@ -34,9 +35,9 @@ Duplicate GitHub deliveries cannot create a second run.
 apps/ingress-worker     edge Worker (verify → normalise → route)
 src/steward             domain runtime
 wrangler.jsonc          SQLite Durable Object + Workflow + R2
+docs/cloudflare-runtime.md
 ```
 
 ```sh
 npm test
-npm run dev
 ```
