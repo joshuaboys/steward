@@ -1,0 +1,9 @@
+{
+  "name": "steward",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test src/steward/steward.test.ts",
+    "dev": "echo \"The domain runtime is tested with npm test. Deploy with wrangler.\""
+  }
+}
