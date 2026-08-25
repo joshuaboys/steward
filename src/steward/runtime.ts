@@ -3,6 +3,8 @@ import { MemoryStore, type StewardSnapshot } from "./storage/memory-store.ts";
 import { seedWorld, type StewardWorld } from "./world.ts";
 import { dependencyWarden } from "./applications/dependency-warden.ts";
 import { mergeConcierge } from "./applications/merge-concierge.ts";
+import { docsWarden } from "./applications/docs-warden.ts";
+import { flakyTestWarden } from "./applications/flaky-test-warden.ts";
 import { durableObjectName, subjectFromGithubRepository } from "./identity.ts";
 import { nowIso } from "./ids.ts";
 import { ingestGithubWebhook } from "./events/ingress.ts";
@@ -82,7 +84,7 @@ export class StewardRuntime {
       },
       store,
       world: this.world,
-      applications: [dependencyWarden, mergeConcierge],
+      applications: [dependencyWarden, mergeConcierge, docsWarden, flakyTestWarden],
       model: this.model,
     });
     this.seedStanding(steward, fullName);
@@ -108,6 +110,36 @@ export class StewardRuntime {
       autonomy: "supervised",
       config: {},
       createdAt: ts,
+      updatedAt: ts,
+    });
+    steward.store.putIntent({
+      id: "docs-warden",
+      applicationId: "docs-warden",
+      description: "Documentation should describe current software behaviour. Observe drift. Do not mutate.",
+      autonomy: "observe",
+      config: {},
+      createdAt: ts,
+      updatedAt: ts,
+    });
+    steward.store.putIntent({
+      id: "flaky-test-warden",
+      applicationId: "flaky-test-warden",
+      description: "CI failures should represent meaningful failures. Classify flakes. Rerun suspected flakes.",
+      autonomy: "supervised",
+      config: {},
+      createdAt: ts,
+      updatedAt: ts,
+    });
+    steward.store.putFact({
+      key: "ci.known_flakes",
+      value: ["test_plan_render_race"],
+      observedAt: ts,
+      updatedAt: ts,
+    });
+    steward.store.putFact({
+      key: "docs.map",
+      value: { "src/bootstrap.rs": ["docs/bootstrap.md"] },
+      observedAt: ts,
       updatedAt: ts,
     });
     steward.store.putWatcher({

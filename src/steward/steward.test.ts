@@ -80,6 +80,19 @@ test("authority denies observe mutations and gates merge", () => {
   });
   assert.equal(gated.allow, true);
   assert.equal(gated.requireApproval, true);
+  const rerun = evaluateAuthority({
+    capability: "github.workflow.rerun",
+    autonomy: "supervised",
+    action: {
+      id: "r",
+      capability: "github.workflow.rerun",
+      input: {},
+      preconditions: { expectedHeadSha: "abc" },
+      summary: "rerun",
+    },
+  });
+  assert.equal(rerun.allow, true);
+  assert.equal(rerun.requireApproval, false);
 });
 
 test("budget gate", () => {
@@ -174,6 +187,66 @@ test("approval then merge is idempotent on stale SHA rejection", async () => {
   const concierge = after.runs.find((row) => row.applicationId === "merge-concierge");
   assert.equal(concierge?.status, "completed");
   assert.equal(concierge?.disposition, "merged");
+});
+
+test("proof: docs warden maps a public API change to the relevant page and records drift without mutating", async () => {
+  const runtime = new StewardRuntime();
+  const result = await runProof(runtime, "docs-drift");
+  assert.equal(result.ok, true);
+  assert.ok(result.receipt?.runId);
+  const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
+  const run = view.runs.find((row) => row.applicationId === "docs-warden");
+  assert.ok(run);
+  assert.equal(run.status, "completed");
+  assert.equal(run.disposition, "finding");
+  assert.equal(view.beliefs.some((row) => row.key === "docs.drift.src/bootstrap.rs"), true);
+  const belief = view.beliefs.find((row) => row.key === "docs.drift.src/bootstrap.rs");
+  assert.equal((belief?.value as { drift?: boolean }).drift, true);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "model.classify"), true);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.file.read"), true);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.create"), false);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"), false);
+});
+
+test("proof: unmapped code change is ignored without a model call", async () => {
+  const runtime = new StewardRuntime();
+  const result = await runProof(runtime, "docs-unmapped");
+  assert.equal(result.ok, true);
+  assert.equal(result.receipt?.disposition, "ignored");
+  const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
+  assert.equal(view.runs.some((row) => row.applicationId === "docs-warden"), false);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "model.classify"), false);
+  assert.equal(view.logs.some((row) => row.event === "event_ignored"), true);
+});
+
+test("proof: flaky test warden classifies a timeout as a suspected flake and reruns CI", async () => {
+  const runtime = new StewardRuntime();
+  const result = await runProof(runtime, "ci-failed");
+  assert.equal(result.ok, true);
+  assert.ok(result.receipt?.runId);
+  const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
+  const run = view.runs.find((row) => row.applicationId === "flaky-test-warden");
+  assert.ok(run);
+  assert.equal(run.status, "completed");
+  assert.equal(run.disposition, "suspected_flake");
+  const belief = view.beliefs.find((row) => row.key === "ci.flake.flake00dead");
+  assert.equal((belief?.value as { outcome?: string }).outcome, "suspected_flake");
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.workflow.rerun" && row.status === "ok"),
+    true,
+  );
+  const ci = view.repository?.workflowRuns.find((item) => item.headSha === "flake00dead");
+  assert.ok(ci);
+  assert.equal(ci.reruns >= 1, true);
+  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"), false);
+});
+
+test("CI success does not create a flaky-test-warden run", async () => {
+  const runtime = new StewardRuntime();
+  const result = await runProof(runtime, "ci-completed");
+  assert.equal(result.ok, true);
+  const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
+  assert.equal(view.runs.some((row) => row.applicationId === "flaky-test-warden"), false);
 });
 
 test("invalid signature is rejected before a run exists", async () => {

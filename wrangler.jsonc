@@ -2,6 +2,9 @@
   "name": "steward",
   "main": "apps/ingress-worker/index.ts",
   "compatibility_date": "2026-08-01",
+  "vars": {
+    "GITHUB_WEBHOOK_SECRET": "steward-dev-webhook-secret"
+  },
   "durable_objects": {
     "bindings": [
       {
@@ -26,7 +29,8 @@
   "r2_buckets": [
     {
       "binding": "EVIDENCE",
-      "bucket_name": "steward-evidence"
+      "bucket_name": "steward-evidence",
+      "preview_bucket_name": "steward-evidence-preview"
     }
   ]
 }

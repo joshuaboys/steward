@@ -17,6 +17,7 @@ const ALWAYS_APPROVE = new Set(["github.pull_request.merge"]);
 const PROCESS_MUTATIONS = new Set([
   "github.pull_request.comment",
   "github.review.request",
+  "github.workflow.rerun",
 ]);
 
 export function evaluateAuthority(input: {
@@ -46,7 +47,7 @@ export function evaluateAuthority(input: {
     return {
       allow: true,
       requireApproval: false,
-      reason: "supervised concierge may request review and comment",
+      reason: "supervised duty may comment, request review, or rerun CI",
     };
   }
   if (input.autonomy === "supervised") {

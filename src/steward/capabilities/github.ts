@@ -87,6 +87,22 @@ export const githubPullRequestComment: Capability<
   },
 };
 
+export const githubWorkflowRerun: Capability<
+  { headSha: string },
+  { headSha: string; reruns: number; status: string }
+> = {
+  id: "github.workflow.rerun",
+  mutating: true,
+  async execute(input, ctx) {
+    const run = repo(ctx).workflowRuns.find((item) => item.headSha === input.headSha);
+    if (!run) throw new Error(`workflow run for ${input.headSha} not found`);
+    run.reruns += 1;
+    run.status = "in_progress";
+    run.conclusion = "pending";
+    return { headSha: run.headSha, reruns: run.reruns, status: run.status };
+  },
+};
+
 export const githubPullRequestMerge: Capability<
   { number: number; expectedHeadSha: string },
   { number: number; state: "merged" }
@@ -110,6 +126,7 @@ export const githubCapabilities = [
   githubFileRead,
   githubPullRequestRead,
   githubWorkflowRead,
+  githubWorkflowRerun,
   githubReviewRequest,
   githubPullRequestComment,
   githubPullRequestMerge,

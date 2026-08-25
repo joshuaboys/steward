@@ -17,6 +17,7 @@ export interface WorkflowRunState {
   headSha: string;
   conclusion: "success" | "failure" | "pending";
   status: "queued" | "in_progress" | "completed";
+  reruns: number;
 }
 
 export interface RepositoryState {
@@ -47,6 +48,9 @@ export function seedWorld(): StewardWorld {
         files: {
           "Cargo.toml": `[package]\nname = "anvil-001"\nversion = "0.1.0"\n\n[dependencies]\nserde = "1.0.210"\ntokio = { version = "1.40.0", features = ["full"] }\n`,
           "Cargo.lock": `name = "serde"\nversion = "1.0.210"\n`,
+          "src/bootstrap.rs": `/// Bootstrap a plan from a template.\npub fn bootstrap_plan(template: &str) -> Plan {\n    Plan::from_template(template)\n}\n`,
+          "src/internal_hash.rs": `pub fn mix(a: u64, b: u64) -> u64 {\n    a ^ b.rotate_left(17)\n}\n`,
+          "docs/bootstrap.md": `# Plan bootstrap\n\n\`bootstrap_plan(template: &str) -> Plan\` builds a plan from a template string.\n\nEmpty templates are rejected.\n`,
         },
         pullRequests: [
           {
@@ -69,6 +73,7 @@ export function seedWorld(): StewardWorld {
             headSha: "abc123def456",
             conclusion: "pending",
             status: "in_progress",
+            reruns: 0,
           },
         ],
       },
@@ -99,6 +104,7 @@ export function seedWorld(): StewardWorld {
             headSha: "occamsha007",
             conclusion: "success",
             status: "completed",
+            reruns: 0,
           },
         ],
       },
@@ -157,6 +163,7 @@ export function completeCi(world: StewardWorld, fullName: string, headSha: strin
       headSha,
       status: "completed",
       conclusion,
+      reruns: 0,
     });
   }
 }

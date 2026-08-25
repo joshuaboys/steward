@@ -1,0 +1,6 @@
+# Local Worker secrets. Copied to .dev.vars by `npm run setup`.
+# GitHub webhook HMAC secret. Must match the App / repo webhook setting.
+GITHUB_WEBHOOK_SECRET=steward-dev-webhook-secret
+
+# Optional. The in-process runtime uses a heuristic classifier unless set.
+# OPENROUTER_API_KEY=

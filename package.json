@@ -2,8 +2,14 @@
   "name": "steward",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "test": "node --experimental-strip-types --test src/steward/steward.test.ts",
-    "dev": "echo \"The domain runtime is tested with npm test. Deploy with wrangler.\""
+    "proof": "node --experimental-strip-types scripts/proof.mjs",
+    "worker": "npx --yes wrangler@4 dev",
+    "deploy": "npx --yes wrangler@4 deploy"
   }
 }
