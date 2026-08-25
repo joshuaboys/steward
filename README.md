@@ -16,66 +16,54 @@ standing responsibility + world change
 
 ## Install
 
-**Node 22.12 or later.** The runtime has no npm dependencies.
+**Node 22.12 or later.** The CLI has no npm dependencies.
+
+```sh
+npm install -g github:joshuaboys/steward
+```
+
+That puts `steward` on your PATH. It stays available in every terminal. A
+project is bound afterwards, not at install time.
+
+```sh
+cd your-repo
+steward init              # git origin, or: steward init owner/repo
+steward status
+```
+
+`init` writes `.steward/config.json` in that repository. The global binary
+addresses that identity while you are in the tree. Different repos, same CLI.
+
+From source, without a global install:
 
 ```sh
 git clone https://github.com/joshuaboys/steward.git
 cd steward
+./bin/steward.mjs help
 npm test
 ```
 
-`npm install` is optional. `npm test` runs the proofs in-process: no Cloudflare
-account, no GitHub App, no secrets.
+## Commands
 
-```sh
-npm run setup     # checks Node, writes .dev.vars
-npm run proof     # prints the four proof receipts
-```
-
-## Run
-
-| Command | What it does |
+| | |
 | --- | --- |
-| `npm test` | Runtime proofs (zero deps) |
-| `npm run proof` | Same proofs, printed as a ledger |
-| `npm run setup` | Node check + local Worker secrets |
-| `npm run worker` | Ingress Worker + Durable Object locally (`npx wrangler`) |
-| `npm run deploy` | Deploy the Worker |
+| `steward init [owner/repo]` | Bind this directory to a RepoSteward |
+| `steward use owner/repo` | Address a different known steward |
+| `steward status` | Identity, duties, last activity |
+| `steward list` | Every steward this process knows |
+| `steward duties` | Standing applications on the current subject |
+| `steward proof [name]` | Fire an architecture proof |
+| `steward worker` | Local Worker (`wrangler dev`) |
+| `steward deploy` | Deploy the Worker |
+| `steward help` | Command list |
 
-The operations console is the same runtime in-process:
+The operations console embeds the same command loop. Type `help`, `status`,
+`init joshuaboys/portals`, `proof docs-drift` there — no second language.
 
 ```sh
 npm install
 npm run dev
 ```
-
-### Local Worker
-
-```sh
-npm run setup
-npm run worker
-```
-
-```
-GET  /health
-POST /webhooks/github     signed GitHub deliveries
-POST /runs                manual run
-```
-
-Copy `.dev.vars.example` to `.dev.vars` if you skipped setup. The demo webhook
-secret is `steward-dev-webhook-secret`.
-
-### Deploy
-
-```sh
-npx wrangler login
-npx wrangler r2 bucket create steward-evidence
-npx wrangler secret put GITHUB_WEBHOOK_SECRET
-npm run deploy
-```
-
-Point a GitHub App or repository webhook at `https://<worker>/webhooks/github`
-with content type `application/json` and the same signing secret.
 
 ## Taxonomy
 
@@ -106,6 +94,11 @@ Models propose. Policy permits. Capabilities act.
 
 Duplicate GitHub deliveries cannot create a second run.
 
+```sh
+steward proof
+steward proof docs-drift
+```
+
 ## Mapping
 
 | steward | Cloudflare |
@@ -127,13 +120,10 @@ or SQLite APIs. Applications do not grant themselves authority.
 ## Layout
 
 ```
+bin/steward.mjs         global CLI entry
+src/steward/cli         command loop (CLI + console)
 apps/ingress-worker     edge Worker (verify → normalise → route)
 src/steward             domain runtime
-  applications/         duties
-  capabilities/         GitHub, registry, models
-  policy/               authority, budget, approvals
-  workflows/            generic StewardRun + local replay
-  storage/              schema + repositories
 wrangler.jsonc          SQLite DO + Workflow + R2
 docs/cloudflare-runtime.md
 ```

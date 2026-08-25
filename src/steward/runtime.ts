@@ -5,7 +5,7 @@ import { dependencyWarden } from "./applications/dependency-warden.ts";
 import { mergeConcierge } from "./applications/merge-concierge.ts";
 import { docsWarden } from "./applications/docs-warden.ts";
 import { flakyTestWarden } from "./applications/flaky-test-warden.ts";
-import { durableObjectName, subjectFromGithubRepository } from "./identity.ts";
+import { durableObjectName, parseGithubRepository, subjectFromGithubRepository } from "./identity.ts";
 import { nowIso } from "./ids.ts";
 import { ingestGithubWebhook } from "./events/ingress.ts";
 import { DEMO_WEBHOOK_SECRET, signGithubWebhook } from "./events/verify.ts";
@@ -48,9 +48,11 @@ export class StewardRuntime {
   private cached: RuntimeView;
   model?: ModelFn;
 
-  constructor(world = seedWorld()) {
+  constructor(world = seedWorld(), options: { seedDemoSubjects?: boolean } = {}) {
     this.world = world;
-    for (const fullName of DEMO_REPOS) this.ensure(fullName);
+    if (options.seedDemoSubjects !== false) {
+      for (const fullName of DEMO_REPOS) this.ensure(fullName);
+    }
     this.cached = this.buildView();
   }
 
@@ -89,6 +91,22 @@ export class StewardRuntime {
     });
     this.seedStanding(steward, fullName);
     this.stewards.set(id, steward);
+    return steward;
+  }
+
+  bind(fullName: string): RepoSteward {
+    parseGithubRepository(fullName);
+    if (!this.world.repositories[fullName]) {
+      this.world.repositories[fullName] = {
+        fullName,
+        defaultBranch: "main",
+        files: {},
+        pullRequests: [],
+        workflowRuns: [],
+      };
+    }
+    const steward = this.ensure(fullName);
+    this.emit();
     return steward;
   }
 
@@ -257,7 +275,7 @@ export class StewardRuntime {
   }
 
   static restore(snapshot: RuntimeSnapshot, model?: ModelFn): StewardRuntime {
-    const runtime = new StewardRuntime(snapshot.world);
+    const runtime = new StewardRuntime(snapshot.world, { seedDemoSubjects: false });
     runtime.model = model;
     runtime.hydrate(snapshot);
     return runtime;

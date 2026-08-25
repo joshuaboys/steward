@@ -2,14 +2,18 @@
   "name": "steward",
   "private": true,
   "type": "module",
+  "bin": {
+    "steward": "./bin/steward.mjs"
+  },
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "setup": "node scripts/setup.mjs",
-    "test": "node --experimental-strip-types --test src/steward/steward.test.ts",
+    "test": "node --experimental-strip-types --test src/steward/steward.test.ts src/steward/cli/cli.test.ts",
     "proof": "node --experimental-strip-types scripts/proof.mjs",
-    "worker": "npx --yes wrangler@4 dev",
-    "deploy": "npx --yes wrangler@4 deploy"
+    "worker": "node bin/steward.mjs worker",
+    "deploy": "node bin/steward.mjs deploy",
+    "steward": "node bin/steward.mjs"
   }
 }

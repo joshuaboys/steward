@@ -7,3 +7,4 @@ export * from "./steward.ts";
 export * from "./world.ts";
 export { DEMO_WEBHOOK_SECRET } from "./events/verify.ts";
 export { toTransportEventType } from "./events/names.ts";
+export * from "./cli/index.ts";
