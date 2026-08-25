@@ -14,6 +14,8 @@ standing responsibility + world change
         → consider → decide → maybe act → record → idle
 ```
 
+**Status:** v0.1 — global CLI, in-process proofs, Cloudflare Worker substrate.
+
 ## Install
 
 **Node 22.12 or later.** The CLI has no npm dependencies.
@@ -53,16 +55,16 @@ npm test
 | `steward list` | Every steward this process knows |
 | `steward duties` | Standing applications on the current subject |
 | `steward proof [name]` | Fire an architecture proof |
+| `steward approve <id>` | Grant a pending approval |
+| `steward reject <id>` | Reject a pending approval |
 | `steward worker` | Local Worker (`wrangler dev`) |
 | `steward deploy` | Deploy the Worker |
 | `steward help` | Command list |
 
-The operations console embeds the same command loop. Type `help`, `status`,
-`init joshuaboys/portals`, `proof docs-drift` there — no second language.
-
 ```sh
-npm install
-npm run dev
+npm run setup            # Node version check; copy .dev.vars.example
+npm test                 # in-process proofs (no Cloudflare account)
+npm run worker           # local Worker + Durable Object
 ```
 
 ## Taxonomy
@@ -76,7 +78,7 @@ These are **not** four stewards.
 | **Run** | One bounded episode of work. The steward outlives it. |
 
 ```
-RepoSteward  (eddacraft/anvil-001)
+RepoSteward  (owner/repo)
 ├── Dependency Warden     observe
 ├── Merge Concierge       supervised
 ├── Docs Warden           observe
@@ -121,14 +123,13 @@ or SQLite APIs. Applications do not grant themselves authority.
 
 ```
 bin/steward.mjs         global CLI entry
-src/steward/cli         command loop (CLI + console)
+src/steward/cli         command loop
 apps/ingress-worker     edge Worker (verify → normalise → route)
 src/steward             domain runtime
 wrangler.jsonc          SQLite DO + Workflow + R2
 docs/cloudflare-runtime.md
 ```
 
-## Specs
+## Spec
 
-- Product: attached steward product specification (25 August 2026)
-- Substrate: [docs/cloudflare-runtime.md](docs/cloudflare-runtime.md)
+Cloudflare substrate: [docs/cloudflare-runtime.md](docs/cloudflare-runtime.md)
