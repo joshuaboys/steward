@@ -18,14 +18,16 @@ standing responsibility + world change
 
 ## Install
 
-**Node 22.12 or later.** The CLI has no npm dependencies.
+**Node 22.12 or later.** The CLI has no npm dependencies. Do not `npm install -g`:
+Node will not run the TypeScript sources from `node_modules`.
 
 ```sh
-npm install -g github:joshuaboys/steward
+curl -fsSL https://raw.githubusercontent.com/joshuaboys/steward/main/install.sh | sh
 ```
 
-That puts `steward` on your PATH. It stays available in every terminal. A
-project is bound afterwards, not at install time.
+That copies the tree to `~/.local/lib/steward` and writes `~/.local/bin/steward`.
+Add `~/.local/bin` to PATH if it is not already. A project is bound afterwards,
+not at install time.
 
 ```sh
 cd your-repo
@@ -33,15 +35,17 @@ steward init              # git origin, or: steward init owner/repo
 steward status
 ```
 
-`init` writes `.steward/config.json` in that repository. The global binary
+`init` writes `.steward/config.json` in that repository. The installed binary
 addresses that identity while you are in the tree. Different repos, same CLI.
 
-From source, without a global install:
+From a clone:
 
 ```sh
 git clone https://github.com/joshuaboys/steward.git
 cd steward
-./bin/steward.mjs help
+./install.sh              # same layout as curl | sh
+./install.sh --uninstall
+./bin/steward.mjs help    # run without installing
 npm test
 ```
 
@@ -122,6 +126,7 @@ or SQLite APIs. Applications do not grant themselves authority.
 ## Layout
 
 ```
+install.sh              POSIX installer (no npm)
 bin/steward.mjs         global CLI entry
 src/steward/cli         command loop
 apps/ingress-worker     edge Worker (verify → normalise → route)
