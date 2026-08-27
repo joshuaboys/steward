@@ -21,13 +21,22 @@ standing responsibility + world change
 **Node 22.12 or later.** The CLI has no npm dependencies. Do not `npm install -g`:
 Node will not run the TypeScript sources from `node_modules`.
 
+Unix:
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/joshuaboys/steward/main/install.sh | sh
 ```
 
-That copies the tree to `~/.local/lib/steward` and writes `~/.local/bin/steward`.
-Add `~/.local/bin` to PATH if it is not already. A project is bound afterwards,
-not at install time.
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/joshuaboys/steward/main/install.ps1 | iex
+```
+
+That copies the tree to `~/.local/lib/steward` and writes `~/.local/bin/steward`
+(Unix) or `steward.cmd` (Windows). Add `~/.local/bin` to PATH if it is not
+already — `install.ps1` adds it to your user PATH. A project is bound
+afterwards, not at install time.
 
 ```sh
 cd your-repo
@@ -43,7 +52,8 @@ From a clone:
 ```sh
 git clone https://github.com/joshuaboys/steward.git
 cd steward
-./install.sh              # same layout as curl | sh
+./install.sh              # Unix; same layout as curl | sh
+./install.ps1             # Windows
 ./install.sh --uninstall
 ./bin/steward.mjs help    # run without installing
 npm test
@@ -127,6 +137,8 @@ or SQLite APIs. Applications do not grant themselves authority.
 
 ```
 install.sh              POSIX installer (no npm)
+install.ps1             Windows installer (no npm)
+scripts/install.mjs     shared copy + wrapper
 bin/steward.mjs         global CLI entry
 src/steward/cli         command loop
 apps/ingress-worker     edge Worker (verify → normalise → route)
