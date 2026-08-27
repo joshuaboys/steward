@@ -5,7 +5,11 @@ import { dependencyWarden } from "./applications/dependency-warden.ts";
 import { mergeConcierge } from "./applications/merge-concierge.ts";
 import { docsWarden } from "./applications/docs-warden.ts";
 import { flakyTestWarden } from "./applications/flaky-test-warden.ts";
-import { durableObjectName, parseGithubRepository, subjectFromGithubRepository } from "./identity.ts";
+import {
+  durableObjectName,
+  parseGithubRepository,
+  subjectFromGithubRepository,
+} from "./identity.ts";
 import { nowIso } from "./ids.ts";
 import { ingestGithubWebhook } from "./events/ingress.ts";
 import { DEMO_WEBHOOK_SECRET, signGithubWebhook } from "./events/verify.ts";
@@ -124,7 +128,8 @@ export class StewardRuntime {
     steward.store.putIntent({
       id: "merge-concierge",
       applicationId: "merge-concierge",
-      description: "Move ready pull requests toward merge. Request review. Merge only with approval.",
+      description:
+        "Move ready pull requests toward merge. Request review. Merge only with approval.",
       autonomy: "supervised",
       config: {},
       createdAt: ts,
@@ -133,7 +138,8 @@ export class StewardRuntime {
     steward.store.putIntent({
       id: "docs-warden",
       applicationId: "docs-warden",
-      description: "Documentation should describe current software behaviour. Observe drift. Do not mutate.",
+      description:
+        "Documentation should describe current software behaviour. Observe drift. Do not mutate.",
       autonomy: "observe",
       config: {},
       createdAt: ts,
@@ -142,7 +148,8 @@ export class StewardRuntime {
     steward.store.putIntent({
       id: "flaky-test-warden",
       applicationId: "flaky-test-warden",
-      description: "CI failures should represent meaningful failures. Classify flakes. Rerun suspected flakes.",
+      description:
+        "CI failures should represent meaningful failures. Classify flakes. Rerun suspected flakes.",
       autonomy: "supervised",
       config: {},
       createdAt: ts,
@@ -187,7 +194,11 @@ export class StewardRuntime {
     return receipt;
   }
 
-  async ingestSignedGithub(envelope: GithubWebhookEnvelope, rawBody: string, secret = DEMO_WEBHOOK_SECRET) {
+  async ingestSignedGithub(
+    envelope: GithubWebhookEnvelope,
+    rawBody: string,
+    secret = DEMO_WEBHOOK_SECRET,
+  ) {
     const result = await ingestGithubWebhook({
       contentType: "application/json",
       envelope,
@@ -234,7 +245,12 @@ export class StewardRuntime {
     return this.deliver(event);
   }
 
-  async resolveApproval(stewardId: string, approvalId: string, decision: "granted" | "rejected", resolvedBy = "human") {
+  async resolveApproval(
+    stewardId: string,
+    approvalId: string,
+    decision: "granted" | "rejected",
+    resolvedBy = "human",
+  ) {
     const steward = this.stewards.get(stewardId);
     if (!steward) throw new Error("steward not found");
     const receipt = await steward.resolveApproval(approvalId, decision, resolvedBy);

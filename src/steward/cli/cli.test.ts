@@ -15,7 +15,10 @@ test("tokenize strips the steward prefix", () => {
 
 test("parse github remotes", () => {
   assert.equal(parseGithubRemote("git@github.com:joshuaboys/steward.git"), "joshuaboys/steward");
-  assert.equal(parseGithubRemote("https://github.com/eddacraft/anvil-001.git"), "eddacraft/anvil-001");
+  assert.equal(
+    parseGithubRemote("https://github.com/eddacraft/anvil-001.git"),
+    "eddacraft/anvil-001",
+  );
   assert.equal(parseGithubRemote("joshuaboys/portals"), "joshuaboys/portals");
 });
 

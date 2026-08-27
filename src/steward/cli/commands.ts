@@ -1,7 +1,7 @@
 import { durableObjectName, subjectFromGithubRepository } from "../identity.ts";
 import { runProof, type ProofId } from "../proofs.ts";
 import type { StewardRuntime } from "../runtime.ts";
-import { CLI_VERSION, DEFAULT_DUTIES, projectConfig, type StewardProjectConfig } from "./config.ts";
+import { CLI_VERSION, projectConfig, type StewardProjectConfig } from "./config.ts";
 import { isRepoId, parseGithubRemote, tokenize } from "./parse.ts";
 
 export const PROOF_NAMES: ProofId[] = [
@@ -76,7 +76,10 @@ async function resolveInitTarget(argv: string[], host: CliHost): Promise<string 
   return fail("init needs owner/repo (or a git origin on github.com)");
 }
 
-export async function runStewardCommand(input: string | string[], host: CliHost): Promise<CliResult> {
+export async function runStewardCommand(
+  input: string | string[],
+  host: CliHost,
+): Promise<CliResult> {
   const argv = Array.isArray(input) ? [...input] : tokenize(input);
   const command = argv.shift() ?? "help";
 

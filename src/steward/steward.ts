@@ -1,4 +1,13 @@
-import { DEFAULT_BUDGET, EMPTY_USAGE, type EventDisposition, type EventReceipt, type Intent, type RunRecord, type StewardEvent, type StewardIdentity } from "./types.ts";
+import {
+  DEFAULT_BUDGET,
+  EMPTY_USAGE,
+  type EventDisposition,
+  type EventReceipt,
+  type Intent,
+  type RunRecord,
+  type StewardEvent,
+  type StewardIdentity,
+} from "./types.ts";
 import type { StewardRepositories } from "./storage/memory-store.ts";
 import type { StewardWorld } from "./world.ts";
 import type { StewardApplication } from "./applications/interface.ts";
@@ -55,14 +64,18 @@ function extractDeterministicFacts(event: StewardEvent): Array<{ key: string; va
       value: { sha: body.after, ref: body.ref },
     });
   }
-  const pr = body.pull_request as { number?: number; head?: { sha?: string }; title?: string } | undefined;
+  const pr = body.pull_request as
+    | { number?: number; head?: { sha?: string }; title?: string }
+    | undefined;
   if (pr?.number) {
     facts.push({
       key: `pr.${pr.number}.observed`,
       value: { number: pr.number, headSha: pr.head?.sha, title: pr.title, type: event.type },
     });
   }
-  const run = body.workflow_run as { head_sha?: string; conclusion?: string; status?: string } | undefined;
+  const run = body.workflow_run as
+    | { head_sha?: string; conclusion?: string; status?: string }
+    | undefined;
   if (run?.head_sha) {
     facts.push({
       key: `ci.${run.head_sha}`,
@@ -97,7 +110,13 @@ export class RepoSteward {
   log(
     event: string,
     detail?: string,
-    extra?: { runId?: string; eventId?: string; workflowInstanceId?: string; applicationId?: string; data?: Record<string, unknown> },
+    extra?: {
+      runId?: string;
+      eventId?: string;
+      workflowInstanceId?: string;
+      applicationId?: string;
+      data?: Record<string, unknown>;
+    },
   ) {
     this.store.appendLog({
       ts: nowIso(),
@@ -163,7 +182,12 @@ export class RepoSteward {
 
     const chosen = relevant[0];
     const intent = this.intentFor(chosen.application.id);
-    const created = await this.createAndStartRun(event, chosen.application, intent, chosen.consideration.executionClass);
+    const created = await this.createAndStartRun(
+      event,
+      chosen.application,
+      intent,
+      chosen.consideration.executionClass,
+    );
     const disposition: EventDisposition = "run_created";
     this.store.setEventDisposition(event.id, disposition, created.id);
     return {
@@ -229,18 +253,23 @@ export class RepoSteward {
         world: this.world,
         model: this.model,
         invoke: (capability, input, meta) =>
-          invokeCapability(capability, input, capabilityContext({
-            stewardId: this.identity.id,
-            run,
-            intent,
-            event,
-            store: this.store,
-            world: this.world,
-            model: this.model,
-            invoke: async () => {
-              throw new Error("nested");
-            },
-          }), meta),
+          invokeCapability(
+            capability,
+            input,
+            capabilityContext({
+              stewardId: this.identity.id,
+              run,
+              intent,
+              event,
+              store: this.store,
+              world: this.world,
+              model: this.model,
+              invoke: async () => {
+                throw new Error("nested");
+              },
+            }),
+            meta,
+          ),
       });
       run.status = "completed";
       run.disposition = result.disposition;
@@ -270,7 +299,12 @@ export class RepoSteward {
     if (!state) {
       state = {
         id: wfId,
-        payload: { stewardId: this.identity.id, runId: run.id, applicationId: application.id, event } satisfies RunPayload,
+        payload: {
+          stewardId: this.identity.id,
+          runId: run.id,
+          applicationId: application.id,
+          event,
+        } satisfies RunPayload,
         status: "running",
         steps: {},
         receivedEvents: [],
@@ -358,7 +392,8 @@ export class RepoSteward {
     const waits = this.store.listWaits().filter((row) => row.status === "waiting");
     let resumed: string | undefined;
     for (const wait of waits) {
-      const typeOk = wait.eventType === event.type || wait.transportType === event.type.replace(/\./g, "_");
+      const typeOk =
+        wait.eventType === event.type || wait.transportType === event.type.replace(/\./g, "_");
       if (!typeOk) continue;
       if (!matchesWait(wait.matcher, event)) continue;
       wait.status = "matched";
@@ -412,7 +447,10 @@ export class RepoSteward {
   async requestApprovalForRun(runIdValue: string, action: Parameters<typeof createApproval>[1]) {
     const approval = createApproval(runIdValue, action);
     this.store.putApproval(approval);
-    this.log("approval_requested", action.summary, { runId: runIdValue, data: { approvalId: approval.id } });
+    this.log("approval_requested", action.summary, {
+      runId: runIdValue,
+      data: { approvalId: approval.id },
+    });
     return approval;
   }
 }

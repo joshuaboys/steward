@@ -22,7 +22,13 @@ function heuristicClassify(prompt: string): string {
   if (lower.includes("classify a ci failure") || lower.includes("known_flakes=")) {
     const title = section(prompt, "TITLE=", "KNOWN_FLAKES=").trim();
     const known = section(prompt, "KNOWN_FLAKES=").split("\n")[0]?.trim() ?? "";
-    const knownList = known === "none" ? [] : known.split(",").map((item) => item.trim()).filter(Boolean);
+    const knownList =
+      known === "none"
+        ? []
+        : known
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean);
     if (knownList.some((name) => title.includes(name))) {
       return JSON.stringify({
         outcome: "known_flake",
@@ -48,7 +54,8 @@ function heuristicClassify(prompt: string): string {
     return JSON.stringify({
       outcome: "real_regression",
       rerun: false,
-      rationale: "Assertion or compile failure without a flake signature. Treat as a real regression.",
+      rationale:
+        "Assertion or compile failure without a flake signature. Treat as a real regression.",
     });
   }
 

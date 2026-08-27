@@ -17,16 +17,16 @@ It does not define steward's full product model. It defines how steward's core c
 
 The key mapping is:
 
-steward concept              Cloudflare implementation
+steward concept Cloudflare implementation
 
-Steward identity      →      Durable Object
-Structured state      →      DO SQLite
-Immediate wake/run    →      Durable Object execution
-Long-running run      →      Workflow
-External wait         →      Workflow waitForEvent
-Scheduled wake        →      Agent schedule / DO alarm
-HTTP/webhook ingress  →      Worker
-Large artefacts       →      R2 where required
+Steward identity → Durable Object
+Structured state → DO SQLite
+Immediate wake/run → Durable Object execution
+Long-running run → Workflow
+External wait → Workflow waitForEvent
+Scheduled wake → Agent schedule / DO alarm
+HTTP/webhook ingress → Worker
+Large artefacts → R2 where required
 
 The architecture MUST preserve the distinction between:
 
@@ -45,7 +45,7 @@ Cloudflare Workflows provide durable multi-step execution, retries, recovery and
 For the initial RepoSteward implementation:
 
 one GitHub repository
-        =
+\=
 one RepoSteward Durable Object
 
 Examples:
@@ -59,7 +59,7 @@ The Durable Object name MUST be derived deterministically from the steward subje
 For example:
 
 const id = env.STEWARDS.idFromName(
-  `github:${owner}/${repository}`
+`github:${owner}/${repository}`
 );
 
 The same subject MUST always resolve to the same Durable Object.
@@ -128,41 +128,41 @@ The same subject MUST always resolve to the same Durable Object.
 The initial Cloudflare deployment SHOULD contain:
 
 apps/
-  ingress-worker
+ingress-worker
 
 src/
-  steward/
-    steward.ts
+steward/
+steward.ts
 
-  workflows/
-    steward-run.ts
+workflows/
+steward-run.ts
 
-  events/
-    ingress.ts
-    normalise.ts
-    verify.ts
-    router.ts
+events/
+ingress.ts
+normalise.ts
+verify.ts
+router.ts
 
-  capabilities/
-    github/
-    models/
-    registry/
+capabilities/
+github/
+models/
+registry/
 
-  storage/
-    schema.ts
-    repositories.ts
+storage/
+schema.ts
+repositories.ts
 
-  policy/
-    authority.ts
-    budget.ts
-    approvals.ts
+policy/
+authority.ts
+budget.ts
+approvals.ts
 
 Cloudflare resources:
 
 Workers application
 Durable Object namespace
 Workflow binding
-R2 bucket                    optional initially
+R2 bucket optional initially
 Secrets
 Observability
 
@@ -190,15 +190,15 @@ It MUST NOT contain steward reasoning.
 Its responsibilities are:
 
 authenticate
-    ↓
+↓
 validate
-    ↓
+↓
 normalise
-    ↓
+↓
 locate Steward DO
-    ↓
+↓
 deliver event
-    ↓
+↓
 respond
 
 ---
@@ -212,19 +212,19 @@ POST /webhooks/github
 Flow:
 
 request
-   ↓
+↓
 validate content type
-   ↓
+↓
 read delivery ID
-   ↓
+↓
 verify GitHub signature
-   ↓
+↓
 identify repository
-   ↓
+↓
 normalise event
-   ↓
+↓
 route to RepoSteward DO
-   ↓
+↓
 acknowledge
 
 The GitHub delivery identifier SHOULD become the primary source event ID.
@@ -232,36 +232,36 @@ The GitHub delivery identifier SHOULD become the primary source event ID.
 Example normalised envelope:
 
 interface StewardEvent<T = unknown> {
-  id: string;
-  source: string;
-  type: string;
+id: string;
+source: string;
+type: string;
 
-  subject: {
-    type: string;
-    id: string;
-  };
+subject: {
+type: string;
+id: string;
+};
 
-  occurredAt: string;
-  receivedAt: string;
+occurredAt: string;
+receivedAt: string;
 
-  correlationId?: string;
-  causationId?: string;
+correlationId?: string;
+causationId?: string;
 
-  payload: T;
+payload: T;
 }
 
 Example:
 
 {
-  "id": "github-delivery-123",
-  "source": "github",
-  "type": "pull_request.synchronize",
-  "subject": {
-    "type": "github.repository",
-    "id": "eddacraft/anvil-001"
-  },
-  "occurredAt": "2026-08-25T03:00:00+08:00",
-  "receivedAt": "2026-08-25T03:00:01+08:00"
+"id": "github-delivery-123",
+"source": "github",
+"type": "pull_request.synchronize",
+"subject": {
+"type": "github.repository",
+"id": "eddacraft/anvil-001"
+},
+"occurredAt": "2026-08-25T03:00:00+08:00",
+"receivedAt": "2026-08-25T03:00:01+08:00"
 }
 
 ---
@@ -311,7 +311,7 @@ The Durable Object owns the steward.
 Conceptually:
 
 export class RepoSteward extends Agent<Env, StewardState> {
-  // steward lifecycle
+// steward lifecycle
 }
 
 Cloudflare's current Agents SDK "Agent" class itself runs on Durable Objects and provides server-side agent state and lifecycle primitives.
@@ -357,90 +357,90 @@ Each Durable Object receives its own embedded SQLite database.
 Suggested initial schema:
 
 CREATE TABLE steward (
-    id TEXT PRIMARY KEY,
-    type TEXT NOT NULL,
-    subject_type TEXT NOT NULL,
-    subject_id TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+id TEXT PRIMARY KEY,
+type TEXT NOT NULL,
+subject_type TEXT NOT NULL,
+subject_id TEXT NOT NULL,
+created_at TEXT NOT NULL,
+updated_at TEXT NOT NULL
 );
 
 CREATE TABLE intents (
-    id TEXT PRIMARY KEY,
-    description TEXT NOT NULL,
-    autonomy TEXT NOT NULL,
-    config_json TEXT,
-    created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+id TEXT PRIMARY KEY,
+description TEXT NOT NULL,
+autonomy TEXT NOT NULL,
+config_json TEXT,
+created_at TEXT NOT NULL,
+updated_at TEXT NOT NULL
 );
 
 CREATE TABLE events (
-    id TEXT PRIMARY KEY,
-    source TEXT NOT NULL,
-    type TEXT NOT NULL,
-    occurred_at TEXT NOT NULL,
-    received_at TEXT NOT NULL,
-    payload_json TEXT,
-    disposition TEXT,
-    run_id TEXT
+id TEXT PRIMARY KEY,
+source TEXT NOT NULL,
+type TEXT NOT NULL,
+occurred_at TEXT NOT NULL,
+received_at TEXT NOT NULL,
+payload_json TEXT,
+disposition TEXT,
+run_id TEXT
 );
 
 CREATE TABLE runs (
-    id TEXT PRIMARY KEY,
-    trigger_event_id TEXT,
-    status TEXT NOT NULL,
-    disposition TEXT,
-    workflow_instance_id TEXT,
-    started_at TEXT NOT NULL,
-    completed_at TEXT,
-    budget_json TEXT,
-    usage_json TEXT
+id TEXT PRIMARY KEY,
+trigger_event_id TEXT,
+status TEXT NOT NULL,
+disposition TEXT,
+workflow_instance_id TEXT,
+started_at TEXT NOT NULL,
+completed_at TEXT,
+budget_json TEXT,
+usage_json TEXT
 );
 
 CREATE TABLE facts (
-    key TEXT PRIMARY KEY,
-    value_json TEXT NOT NULL,
-    source_event_id TEXT,
-    observed_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+key TEXT PRIMARY KEY,
+value_json TEXT NOT NULL,
+source_event_id TEXT,
+observed_at TEXT NOT NULL,
+updated_at TEXT NOT NULL
 );
 
 CREATE TABLE beliefs (
-    key TEXT PRIMARY KEY,
-    value_json TEXT NOT NULL,
-    confidence REAL NOT NULL,
-    evidence_id TEXT,
-    observed_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+key TEXT PRIMARY KEY,
+value_json TEXT NOT NULL,
+confidence REAL NOT NULL,
+evidence_id TEXT,
+observed_at TEXT NOT NULL,
+updated_at TEXT NOT NULL
 );
 
 CREATE TABLE decisions (
-    id TEXT PRIMARY KEY,
-    run_id TEXT NOT NULL,
-    type TEXT NOT NULL,
-    decision_json TEXT NOT NULL,
-    created_at TEXT NOT NULL
+id TEXT PRIMARY KEY,
+run_id TEXT NOT NULL,
+type TEXT NOT NULL,
+decision_json TEXT NOT NULL,
+created_at TEXT NOT NULL
 );
 
 CREATE TABLE capability_calls (
-    id TEXT PRIMARY KEY,
-    run_id TEXT NOT NULL,
-    capability TEXT NOT NULL,
-    request_digest TEXT,
-    response_digest TEXT,
-    status TEXT NOT NULL,
-    started_at TEXT NOT NULL,
-    completed_at TEXT
+id TEXT PRIMARY KEY,
+run_id TEXT NOT NULL,
+capability TEXT NOT NULL,
+request_digest TEXT,
+response_digest TEXT,
+status TEXT NOT NULL,
+started_at TEXT NOT NULL,
+completed_at TEXT
 );
 
 CREATE TABLE approvals (
-    id TEXT PRIMARY KEY,
-    run_id TEXT NOT NULL,
-    action_json TEXT NOT NULL,
-    status TEXT NOT NULL,
-    requested_at TEXT NOT NULL,
-    resolved_at TEXT,
-    resolved_by TEXT
+id TEXT PRIMARY KEY,
+run_id TEXT NOT NULL,
+action_json TEXT NOT NULL,
+status TEXT NOT NULL,
+requested_at TEXT NOT NULL,
+resolved_at TEXT,
+resolved_by TEXT
 );
 
 This schema SHOULD remain intentionally boring.
@@ -462,9 +462,9 @@ ON CONFLICT(id) DO NOTHING;
 If no row is inserted:
 
 duplicate
-   ↓
+↓
 return existing disposition
-   ↓
+↓
 no new run
 
 No LLM call or external side-effect may happen before deduplication.
@@ -480,22 +480,22 @@ receiveEvent(event: StewardEvent): Promise<EventReceipt>
 Flow:
 
 receive event
-    ↓
+↓
 dedupe
-    ↓
+↓
 update obvious deterministic state
-    ↓
+↓
 match subscriptions / intents
-    ↓
+↓
 cheap relevance evaluation
-    ↓
+↓
 irrelevant?
- ┌────┴────┐
- yes       no
- │         │
-record     create Run
- │         │
-done       ▼
+┌────┴────┐
+yes no
+│ │
+record create Run
+│ │
+done ▼
 
 A deterministic event may be handled entirely inside the DO if processing is short and no durable wait is required.
 
@@ -538,27 +538,28 @@ Cloudflare currently recommends Agents alone for quick interaction, and Agent + 
 Generic workflow:
 
 export class StewardRunWorkflow extends AgentWorkflow<
-  Env,
-  RunPayload
+Env,
+RunPayload
+
 > {
-  async run(event, step) {
-    // ...
-  }
-}
+> async run(event, step) {
+> // ...
+> }
+> }
 
 The Workflow SHOULD not implement application-specific logic directly.
 
 Instead:
 
 StewardRunWorkflow
-      │
-      ▼
+│
+▼
 resolve application
-      │
-      ▼
+│
+▼
 execute application stages
-      │
-      ▼
+│
+▼
 capabilities
 
 ---
@@ -583,8 +584,8 @@ Each durable stage SHOULD use "step.do()" where replay/retry boundaries matter.
 Conceptually:
 
 const classification = await step.do(
-  "classify-event",
-  async () => classify(...)
+"classify-event",
+async () => classify(...)
 );
 
 External side-effects MUST be isolated into explicit workflow steps.
@@ -608,9 +609,9 @@ The mapping MUST be persisted in the DO "runs" table.
 This allows:
 
 Steward
-  ↓
+↓
 Run
-  ↓
+↓
 Workflow instance
 
 to be inspected deterministically.
@@ -624,17 +625,17 @@ One of the strongest reasons to use Workflows is eliminating polling.
 Example merge concierge:
 
 start Run
-  ↓
+↓
 rebase PR
-  ↓
+↓
 waitForEvent(ci_completed)
-  ↓
+↓
 check CI
-  ↓
+↓
 waitForEvent(review_submitted)
-  ↓
+↓
 evaluate review
-  ↓
+↓
 complete
 
 Cloudflare Workflows can durably pause using "step.waitForEvent", and later resume when an event is sent to the workflow instance.
@@ -648,13 +649,13 @@ This SHOULD be steward's preferred implementation for external waiting.
 When the RepoSteward receives an event:
 
 event
-  ↓
+↓
 does this correlate with active run?
-  ↓
+↓
 yes
-  ↓
+↓
 find workflow instance
-  ↓
+↓
 sendEvent()
 
 Example correlation:
@@ -703,10 +704,10 @@ Cloudflare Agents support persisted scheduled tasks, while underlying Durable Ob
 The first implementation SHOULD expose a steward-level abstraction:
 
 interface StewardSchedule {
-  id: string;
-  type: "once" | "interval" | "cron";
-  specification: string;
-  eventType: string;
+id: string;
+type: "once" | "interval" | "cron";
+specification: string;
+eventType: string;
 }
 
 A schedule firing SHOULD generate a normal steward event:
@@ -724,14 +725,14 @@ Watchers convert polling-based sources into steward events.
 Example:
 
 schedule wakes steward
-      ↓
+↓
 watch crates.io package
-      ↓
+↓
 latest version changed?
-      ↓
+↓
 no → update observation and sleep
 yes
-      ↓
+↓
 emit dependency.release event
 
 Watcher state SHOULD be persisted in DO SQLite.
@@ -739,12 +740,12 @@ Watcher state SHOULD be persisted in DO SQLite.
 Example:
 
 CREATE TABLE watchers (
-    id TEXT PRIMARY KEY,
-    type TEXT NOT NULL,
-    config_json TEXT NOT NULL,
-    cursor_json TEXT,
-    last_checked_at TEXT,
-    next_check_at TEXT
+id TEXT PRIMARY KEY,
+type TEXT NOT NULL,
+config_json TEXT NOT NULL,
+cursor_json TEXT,
+last_checked_at TEXT,
+next_check_at TEXT
 );
 
 ---
@@ -758,8 +759,8 @@ External systems are exposed through capability adapters.
 Example:
 
 interface Capability<I, O> {
-  id: string;
-  execute(input: I, context: CapabilityContext): Promise<O>;
+id: string;
+execute(input: I, context: CapabilityContext): Promise<O>;
 }
 
 Initial capabilities:
@@ -789,13 +790,13 @@ OpenRouter SHOULD initially be called directly from a model capability adapter.
 Conceptually:
 
 application
-   ↓
+↓
 model capability
-   ↓
+↓
 model policy
-   ↓
+↓
 OpenRouter adapter
-   ↓
+↓
 model/provider
 
 The Durable Object itself SHOULD NOT know OpenRouter request formats.
@@ -830,10 +831,10 @@ Budget state MUST remain steward-owned.
 Example:
 
 interface RunBudget {
-  maxCostUsd: number;
-  maxModelCalls: number;
-  maxSteps: number;
-  maxCapabilityCalls: number;
+maxCostUsd: number;
+maxModelCalls: number;
+maxSteps: number;
+maxCapabilityCalls: number;
 }
 
 Usage MUST be persisted after meaningful model/tool execution.
@@ -849,17 +850,17 @@ No Workflow may silently exceed its Run budget.
 External mutation MUST pass steward's policy engine immediately before invocation.
 
 proposed action
-     ↓
+↓
 schema validation
-     ↓
+↓
 authority
-     ↓
+↓
 intent policy
-     ↓
+↓
 run budget
-     ↓
+↓
 approval requirement
-     ↓
+↓
 execute
 
 This policy code SHOULD be plain TypeScript and deterministic.
@@ -873,27 +874,27 @@ The Cloudflare platform is execution infrastructure, not the source of authority
 Example:
 
 Workflow proposes merge
-      ↓
+↓
 authority = approval required
-      ↓
+↓
 Steward creates approval
-      ↓
+↓
 Workflow waits
-      ↓
+↓
 human approves via API/UI
-      ↓
+↓
 Ingress Worker
-      ↓
+↓
 RepoSteward
-      ↓
+↓
 update approval
-      ↓
+↓
 send approval_granted to Workflow
-      ↓
+↓
 Workflow resumes
-      ↓
+↓
 revalidate current PR state
-      ↓
+↓
 merge
 
 The approval event MUST NOT itself execute the mutation.
@@ -911,15 +912,15 @@ However, steward MUST still explicitly handle logical concurrency.
 Example:
 
 Run A analysing PR SHA abc
-              │
+│
 new push → SHA def
-              │
+│
 Run A proposes mutation
-              ↓
+↓
 precondition check:
 expected SHA abc
 actual SHA def
-              ↓
+↓
 superseded
 
 Every mutation SHOULD include the strongest available external precondition.
@@ -960,15 +961,15 @@ Therefore, steps containing external mutations MUST be idempotent.
 Safe pattern:
 
 step
-  ↓
+↓
 check whether desired outcome already exists
-  ↓
+↓
 if yes:
-    return existing result
-  ↓
+return existing result
+↓
 otherwise:
-    perform mutation
-  ↓
+perform mutation
+↓
 persist resulting identifier
 
 Never assume:
@@ -1040,11 +1041,11 @@ Queues MAY become appropriate for high-volume fan-out where one external event i
 Example future use:
 
 security advisory
-      ↓
+↓
 affects 28,000 repos
-      ↓
+↓
 Queue
-      ↓
+↓
 fan-out to RepoStewards
 
 Do not add Queues before this scale exists.
@@ -1058,7 +1059,7 @@ Internal Cloudflare components SHOULD prefer service/RPC bindings over public HT
 For example:
 
 Ingress Worker
-    ↓ RPC
+↓ RPC
 RepoSteward DO
 
 External HTTP should exist only where required.
@@ -1091,9 +1092,9 @@ Capabilities should receive only the credentials required for their operation.
 Initial identity:
 
 GitHub installation
-    ↓
+↓
 repository
-    ↓
+↓
 RepoSteward
 
 The subject identity MUST contain enough information to prevent repository-name collisions.
@@ -1113,15 +1114,15 @@ Deleting a steward MUST be explicit.
 Suggested process:
 
 mark steward deleting
-     ↓
+↓
 cancel/supersede active Runs
-     ↓
+↓
 cancel Workflow instances where supported
-     ↓
+↓
 remove schedules
-     ↓
+↓
 remove retained R2 artefacts according to policy
-     ↓
+↓
 delete DO state
 
 Repository deletion or GitHub App uninstallation SHOULD trigger this lifecycle.
@@ -1137,7 +1138,7 @@ Durable Objects are billed for active compute duration, while objects that are i
 Therefore:
 
 persistent responsibility
-       ≠
+≠
 persistent compute
 
 This is a fundamental economic property of steward.
@@ -1215,29 +1216,29 @@ Large evidence artefacts MAY be stored in R2.
 Conceptual "wrangler" resources:
 
 {
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "STEWARDS",
-        "class_name": "RepoSteward"
-      }
-    ]
-  },
+"durable_objects": {
+"bindings": [
+{
+"name": "STEWARDS",
+"class_name": "RepoSteward"
+}
+]
+},
 
-  "workflows": [
-    {
-      "name": "steward-run",
-      "binding": "STEWARD_RUN_WORKFLOW",
-      "class_name": "StewardRunWorkflow"
-    }
-  ],
+"workflows": [
+{
+"name": "steward-run",
+"binding": "STEWARD_RUN_WORKFLOW",
+"class_name": "StewardRunWorkflow"
+}
+],
 
-  "r2_buckets": [
-    {
-      "binding": "EVIDENCE",
-      "bucket_name": "steward-evidence"
-    }
-  ]
+"r2_buckets": [
+{
+"binding": "EVIDENCE",
+"bucket_name": "steward-evidence"
+}
+]
 }
 
 Exact configuration MUST follow the Cloudflare platform syntax at implementation time.
@@ -1297,18 +1298,18 @@ idempotency
 The Cloudflare substrate SHOULD expose applications to the steward runtime through a minimal interface.
 
 interface StewardApplication {
-  id: string;
+id: string;
 
-  subscriptions: EventMatcher[];
+subscriptions: EventMatcher[];
 
-  consider(
-    context: StewardContext,
-    event: StewardEvent
-  ): Promise<Consideration>;
+consider(
+context: StewardContext,
+event: StewardEvent
+): Promise<Consideration>;
 
-  run(
-    context: RunContext
-  ): Promise<RunResult>;
+run(
+context: RunContext
+): Promise<RunResult>;
 }
 
 The application MUST NOT know whether it is executing:
@@ -1326,8 +1327,8 @@ unless it explicitly requires durable workflow semantics.
 Applications MAY indicate execution requirements:
 
 type ExecutionClass =
-  | "immediate"
-  | "durable";
+| "immediate"
+| "durable";
 
 Example:
 
@@ -1453,53 +1454,54 @@ The first end-to-end Cloudflare proof SHOULD be:
 
 GitHub webhook:
 dependency manifest changed
-        ↓
+↓
 Ingress Worker verifies webhook
-        ↓
+↓
 routes to RepoSteward
-        ↓
+↓
 event stored/deduplicated
-        ↓
+↓
 Steward determines investigation required
-        ↓
+↓
 creates Run
-        ↓
+↓
 starts StewardRun Workflow
-        ↓
+↓
 Workflow reads dependency/repository state
-        ↓
+↓
 model classifies impact
-        ↓
+↓
 no mutation required
-        ↓
+↓
 Workflow records evidence
-        ↓
+↓
 Run completes
-        ↓
+↓
 Steward returns idle
 
 The second proof SHOULD demonstrate durable waiting:
 
 PR becomes ready
-        ↓
+↓
 merge-concierge Run
-        ↓
+↓
 Workflow waits for CI
-        ↓
+↓
 
       zero active work
 
         ↓
+
 GitHub CI webhook arrives
-        ↓
+↓
 RepoSteward receives event
-        ↓
+↓
 routes event to Workflow
-        ↓
+↓
 Workflow resumes
-        ↓
+↓
 checks policy
-        ↓
+↓
 requests review / completes
 
 This second case is the strongest validation that Cloudflare is the correct runtime substrate.

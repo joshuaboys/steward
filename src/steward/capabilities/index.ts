@@ -118,9 +118,7 @@ export async function invokeCapability<I, O>(
         .listApprovals()
         .find(
           (row) =>
-            row.runId === context.run.id &&
-            row.action.id === action.id &&
-            row.status === "granted",
+            row.runId === context.run.id && row.action.id === action.id && row.status === "granted",
         );
       if (!granted) {
         const call = record(context.store, {

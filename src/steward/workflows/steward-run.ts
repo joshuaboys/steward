@@ -30,7 +30,7 @@ export function createStewardRunWorkflow(input: {
 }): WorkflowRunFn<RunPayload> {
   return async (_event, step: WorkflowStep): Promise<RunResult> => {
     const runContext: RunContext = {
-      stewardId: input.run.id.startsWith("run") ? input.store.getIdentity()?.id ?? "" : "",
+      stewardId: input.run.id.startsWith("run") ? (input.store.getIdentity()?.id ?? "") : "",
       run: input.run,
       intent: input.intent,
       event: input.run.triggerEventId

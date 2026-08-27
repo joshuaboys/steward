@@ -32,10 +32,7 @@ export interface WorkflowEventPayload {
   payload: unknown;
 }
 
-export type WorkflowRunFn<P> = (
-  event: { payload: P },
-  step: WorkflowStep,
-) => Promise<unknown>;
+export type WorkflowRunFn<P> = (event: { payload: P }, step: WorkflowStep) => Promise<unknown>;
 
 export interface ReceivedWorkflowEvent {
   type: string;
@@ -77,7 +74,7 @@ export function createStep(state: WorkflowInstanceState): WorkflowStep {
         if (options.matcher) {
           const payload = item.payload as Record<string, unknown> | undefined;
           const nested = (payload?.payload as Record<string, unknown> | undefined) ?? {};
-          const haystack = { ...(payload ?? {}), ...nested };
+          const haystack = { ...payload, ...nested };
           for (const [key, value] of Object.entries(options.matcher)) {
             if (String(haystack[key] ?? "") !== value) return false;
           }

@@ -16,7 +16,10 @@ import type { StewardEvent } from "../types.ts";
 import { SCHEMA_STATEMENTS } from "../storage/schema.ts";
 
 export interface SqlExec {
-  exec<T = Record<string, unknown>>(query: string, ...bindings: unknown[]): {
+  exec<T = Record<string, unknown>>(
+    query: string,
+    ...bindings: unknown[]
+  ): {
     toArray(): T[];
     one(): T;
   };
@@ -35,7 +38,9 @@ export interface StewardEnv {
   };
   STEWARD_RUN_WORKFLOW: {
     create(options: { id: string; params: unknown }): Promise<{ id: string }>;
-    get(id: string): Promise<{ sendEvent(event: { type: string; payload: unknown }): Promise<void> }>;
+    get(
+      id: string,
+    ): Promise<{ sendEvent(event: { type: string; payload: unknown }): Promise<void> }>;
   };
 }
 

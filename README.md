@@ -56,24 +56,28 @@ cd steward
 ./install.ps1             # Windows
 ./install.sh --uninstall
 ./bin/steward.mjs help    # run without installing
-npm test
+pnpm test                 # same as npm test; no runtime deps
+pnpm lint                 # oxlint
+pnpm format               # oxfmt
 ```
+
+`pnpm install` is only needed for oxlint/oxfmt. The CLI still has no runtime dependencies.
 
 ## Commands
 
-| | |
-| --- | --- |
-| `steward init [owner/repo]` | Bind this directory to a RepoSteward |
-| `steward use owner/repo` | Address a different known steward |
-| `steward status` | Identity, duties, last activity |
-| `steward list` | Every steward this process knows |
-| `steward duties` | Standing applications on the current subject |
-| `steward proof [name]` | Fire an architecture proof |
-| `steward approve <id>` | Grant a pending approval |
-| `steward reject <id>` | Reject a pending approval |
-| `steward worker` | Local Worker (`wrangler dev`) |
-| `steward deploy` | Deploy the Worker |
-| `steward help` | Command list |
+|                             |                                              |
+| --------------------------- | -------------------------------------------- |
+| `steward init [owner/repo]` | Bind this directory to a RepoSteward         |
+| `steward use owner/repo`    | Address a different known steward            |
+| `steward status`            | Identity, duties, last activity              |
+| `steward list`              | Every steward this process knows             |
+| `steward duties`            | Standing applications on the current subject |
+| `steward proof [name]`      | Fire an architecture proof                   |
+| `steward approve <id>`      | Grant a pending approval                     |
+| `steward reject <id>`       | Reject a pending approval                    |
+| `steward worker`            | Local Worker (`wrangler dev`)                |
+| `steward deploy`            | Deploy the Worker                            |
+| `steward help`              | Command list                                 |
 
 ```sh
 npm run setup            # Node version check; copy .dev.vars.example
@@ -85,11 +89,11 @@ npm run worker           # local Worker + Durable Object
 
 These are **not** four stewards.
 
-| | |
-| --- | --- |
+|             |                                                                        |
+| ----------- | ---------------------------------------------------------------------- |
 | **Steward** | Durable identity for one subject. One GitHub repo → one `RepoSteward`. |
-| **Duty** | A standing application on that steward. |
-| **Run** | One bounded episode of work. The steward outlives it. |
+| **Duty**    | A standing application on that steward.                                |
+| **Run**     | One bounded episode of work. The steward outlives it.                  |
 
 ```
 RepoSteward  (owner/repo)
@@ -117,16 +121,16 @@ steward proof docs-drift
 
 ## Mapping
 
-| steward | Cloudflare |
-| --- | --- |
-| Identity | Durable Object (`RepoSteward`) |
-| Structured state | DO SQLite |
-| Immediate wake | Durable Object execution |
-| Long-running run | Workflow (`StewardRunWorkflow`) |
-| External wait | `step.waitForEvent` |
-| Scheduled wake | steward schedule / DO alarm |
-| HTTP / webhook ingress | Worker |
-| Large artefacts | R2 (optional in v0.1) |
+| steward                | Cloudflare                      |
+| ---------------------- | ------------------------------- |
+| Identity               | Durable Object (`RepoSteward`)  |
+| Structured state       | DO SQLite                       |
+| Immediate wake         | Durable Object execution        |
+| Long-running run       | Workflow (`StewardRunWorkflow`) |
+| External wait          | `step.waitForEvent`             |
+| Scheduled wake         | steward schedule / DO alarm     |
+| HTTP / webhook ingress | Worker                          |
+| Large artefacts        | R2 (optional in v0.1)           |
 
 D1 and Queues are intentionally absent.
 

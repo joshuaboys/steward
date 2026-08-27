@@ -1,12 +1,11 @@
-import type {
-  Consideration,
-  RunResult,
-  StewardEvent,
-  RunRecord,
-  Intent,
-} from "../types.ts";
+import type { Consideration, RunResult, StewardEvent, RunRecord, Intent } from "../types.ts";
 import type { StewardRepositories } from "../storage/memory-store.ts";
-import type { Capability, CapabilityContext, CapabilityResult, ModelFn } from "../capabilities/index.ts";
+import type {
+  Capability,
+  CapabilityContext,
+  CapabilityResult,
+  ModelFn,
+} from "../capabilities/index.ts";
 import type { StewardWorld } from "../world.ts";
 
 export interface StewardContext {

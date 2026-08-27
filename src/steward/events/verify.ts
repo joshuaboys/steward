@@ -1,9 +1,7 @@
 export const DEMO_WEBHOOK_SECRET = "steward-dev-webhook-secret";
 
 function hex(buffer: ArrayBuffer): string {
-  return [...new Uint8Array(buffer)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export async function hmacSha256Hex(secret: string, body: string): Promise<string> {

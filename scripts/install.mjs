@@ -25,7 +25,8 @@ const ITEMS = [
 ];
 
 function usage() {
-  process.stdout.write(`Install steward onto PREFIX/bin (default: ~/.local/bin). Requires Node 22.12+.
+  process.stdout
+    .write(`Install steward onto PREFIX/bin (default: ~/.local/bin). Requires Node 22.12+.
 Does not use npm.
 
   node scripts/install.mjs
