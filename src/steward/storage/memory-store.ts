@@ -147,7 +147,9 @@ export class MemoryStore implements StewardRepositories {
   }
 
   listRuns() {
-    return [...this.runs.values()].map(clone).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+    return [...this.runs.values()]
+      .map(clone)
+      .sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   }
 
   putFact(fact: Fact) {

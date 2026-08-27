@@ -4,7 +4,12 @@ import { modelClassify } from "../capabilities/models.ts";
 import type { StewardApplication } from "./interface.ts";
 import type { Fact } from "../types.ts";
 
-type Outcome = "real_regression" | "known_flake" | "suspected_flake" | "infrastructure_failure" | "unknown";
+type Outcome =
+  | "real_regression"
+  | "known_flake"
+  | "suspected_flake"
+  | "infrastructure_failure"
+  | "unknown";
 
 function workflowPayload(payload: unknown): {
   headSha?: string;
@@ -17,11 +22,21 @@ function workflowPayload(payload: unknown): {
   const body = payload as Record<string, unknown>;
   const run = (body.workflow_run ?? body) as Record<string, unknown>;
   return {
-    headSha: typeof run.head_sha === "string" ? run.head_sha : typeof body.headSha === "string" ? body.headSha : undefined,
+    headSha:
+      typeof run.head_sha === "string"
+        ? run.head_sha
+        : typeof body.headSha === "string"
+          ? body.headSha
+          : undefined,
     conclusion: typeof run.conclusion === "string" ? run.conclusion : undefined,
     status: typeof run.status === "string" ? run.status : undefined,
     name: typeof run.name === "string" ? run.name : undefined,
-    title: typeof run.display_title === "string" ? run.display_title : typeof run.name === "string" ? run.name : undefined,
+    title:
+      typeof run.display_title === "string"
+        ? run.display_title
+        : typeof run.name === "string"
+          ? run.name
+          : undefined,
   };
 }
 
@@ -41,7 +56,10 @@ export const flakyTestWarden: StewardApplication = {
       return {
         relevant: false,
         executionClass: "immediate",
-        reason: run.conclusion === "success" ? "CI succeeded; not a failure to classify" : "workflow event has no failure",
+        reason:
+          run.conclusion === "success"
+            ? "CI succeeded; not a failure to classify"
+            : "workflow event has no failure",
         applicationId: "flaky-test-warden",
       };
     }

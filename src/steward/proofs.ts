@@ -119,7 +119,9 @@ export async function runProof(runtime: StewardRuntime, proof: ProofId): Promise
   }
 
   if (proof === "registry-tick") {
-    const receipt = await runtime.manual(ANVIL, "schedule.tick", { scheduleId: "registry-six-hours" });
+    const receipt = await runtime.manual(ANVIL, "schedule.tick", {
+      scheduleId: "registry-six-hours",
+    });
     return { ok: true, status: 202, stewardId: receipt.stewardId, receipt };
   }
 

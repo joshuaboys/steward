@@ -143,13 +143,23 @@ export function seedWorld(): StewardWorld {
   };
 }
 
-export function applyManifestBump(world: StewardWorld, fullName: string, file: string, next: string) {
+export function applyManifestBump(
+  world: StewardWorld,
+  fullName: string,
+  file: string,
+  next: string,
+) {
   const repo = world.repositories[fullName];
   if (!repo) return;
   repo.files[file] = next;
 }
 
-export function completeCi(world: StewardWorld, fullName: string, headSha: string, conclusion: "success" | "failure") {
+export function completeCi(
+  world: StewardWorld,
+  fullName: string,
+  headSha: string,
+  conclusion: "success" | "failure",
+) {
   const repo = world.repositories[fullName];
   if (!repo) return;
   const run = repo.workflowRuns.find((item) => item.headSha === headSha);

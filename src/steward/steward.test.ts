@@ -114,9 +114,18 @@ test("proof: dependency manifest change creates a durable run that completes wit
   assert.equal(run.applicationId, "dependency-warden");
   assert.equal(run.status, "completed");
   assert.equal(run.disposition, "observed");
-  assert.equal(view.beliefs.some((row) => row.key === "dependency.serde.impact"), true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "model.classify"), true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"), false);
+  assert.equal(
+    view.beliefs.some((row) => row.key === "dependency.serde.impact"),
+    true,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "model.classify"),
+    true,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"),
+    false,
+  );
 });
 
 test("proof: duplicate github delivery does not create a second run", async () => {
@@ -144,7 +153,10 @@ test("proof: merge concierge waits for CI with zero running compute, then resume
   assert.ok(run.waitingFor);
   assert.equal(waiting.running, 0);
   assert.equal(waiting.waiting, 1);
-  assert.equal(steward.waits.some((row) => row.eventType === "github.workflow.completed"), true);
+  assert.equal(
+    steward.waits.some((row) => row.eventType === "github.workflow.completed"),
+    true,
+  );
 
   const resumed = await runProof(runtime, "ci-completed");
   assert.equal(resumed.ok, true);
@@ -154,7 +166,9 @@ test("proof: merge concierge waits for CI with zero running compute, then resume
   assert.equal(concierge.status, "waiting");
   assert.ok(after.approvals.some((row) => row.status === "pending"));
   assert.equal(
-    after.capabilityCalls.some((row) => row.capability === "github.review.request" && row.status === "ok"),
+    after.capabilityCalls.some(
+      (row) => row.capability === "github.review.request" && row.status === "ok",
+    ),
     true,
   );
   const pr = after.repository?.pullRequests.find((item) => item.number === 42);
@@ -168,8 +182,14 @@ test("one event can update facts and resume a waiting workflow", async () => {
   await runProof(runtime, "merge-concierge");
   await runProof(runtime, "ci-completed");
   const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
-  assert.equal(view.facts.some((row) => row.key.startsWith("ci.")), true);
-  assert.equal(view.logs.some((row) => row.event === "workflow_resumed"), true);
+  assert.equal(
+    view.facts.some((row) => row.key.startsWith("ci.")),
+    true,
+  );
+  assert.equal(
+    view.logs.some((row) => row.event === "workflow_resumed"),
+    true,
+  );
   assert.equal(view.approvals.length > 0, true);
 });
 
@@ -199,13 +219,29 @@ test("proof: docs warden maps a public API change to the relevant page and recor
   assert.ok(run);
   assert.equal(run.status, "completed");
   assert.equal(run.disposition, "finding");
-  assert.equal(view.beliefs.some((row) => row.key === "docs.drift.src/bootstrap.rs"), true);
+  assert.equal(
+    view.beliefs.some((row) => row.key === "docs.drift.src/bootstrap.rs"),
+    true,
+  );
   const belief = view.beliefs.find((row) => row.key === "docs.drift.src/bootstrap.rs");
-  assert.equal((belief?.value as { drift?: boolean }).drift, true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "model.classify"), true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.file.read"), true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.create"), false);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"), false);
+  assert.ok(belief);
+  assert.equal((belief.value as { drift?: boolean }).drift, true);
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "model.classify"),
+    true,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.file.read"),
+    true,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.pull_request.create"),
+    false,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"),
+    false,
+  );
 });
 
 test("proof: unmapped code change is ignored without a model call", async () => {
@@ -214,9 +250,18 @@ test("proof: unmapped code change is ignored without a model call", async () => 
   assert.equal(result.ok, true);
   assert.equal(result.receipt?.disposition, "ignored");
   const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
-  assert.equal(view.runs.some((row) => row.applicationId === "docs-warden"), false);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "model.classify"), false);
-  assert.equal(view.logs.some((row) => row.event === "event_ignored"), true);
+  assert.equal(
+    view.runs.some((row) => row.applicationId === "docs-warden"),
+    false,
+  );
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "model.classify"),
+    false,
+  );
+  assert.equal(
+    view.logs.some((row) => row.event === "event_ignored"),
+    true,
+  );
 });
 
 test("proof: flaky test warden classifies a timeout as a suspected flake and reruns CI", async () => {
@@ -230,15 +275,21 @@ test("proof: flaky test warden classifies a timeout as a suspected flake and rer
   assert.equal(run.status, "completed");
   assert.equal(run.disposition, "suspected_flake");
   const belief = view.beliefs.find((row) => row.key === "ci.flake.flake00dead");
-  assert.equal((belief?.value as { outcome?: string }).outcome, "suspected_flake");
+  assert.ok(belief);
+  assert.equal((belief.value as { outcome?: string }).outcome, "suspected_flake");
   assert.equal(
-    view.capabilityCalls.some((row) => row.capability === "github.workflow.rerun" && row.status === "ok"),
+    view.capabilityCalls.some(
+      (row) => row.capability === "github.workflow.rerun" && row.status === "ok",
+    ),
     true,
   );
   const ci = view.repository?.workflowRuns.find((item) => item.headSha === "flake00dead");
   assert.ok(ci);
   assert.equal(ci.reruns >= 1, true);
-  assert.equal(view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"), false);
+  assert.equal(
+    view.capabilityCalls.some((row) => row.capability === "github.pull_request.merge"),
+    false,
+  );
 });
 
 test("CI success does not create a flaky-test-warden run", async () => {
@@ -246,7 +297,10 @@ test("CI success does not create a flaky-test-warden run", async () => {
   const result = await runProof(runtime, "ci-completed");
   assert.equal(result.ok, true);
   const view = runtime.getSnapshot().stewards["github:eddacraft/anvil-001"];
-  assert.equal(view.runs.some((row) => row.applicationId === "flaky-test-warden"), false);
+  assert.equal(
+    view.runs.some((row) => row.applicationId === "flaky-test-warden"),
+    false,
+  );
 });
 
 test("invalid signature is rejected before a run exists", async () => {

@@ -13,7 +13,10 @@ export interface StewardProjectConfig {
   duties: string[];
 }
 
-export function projectConfig(fullName: string, duties: string[] = [...DEFAULT_DUTIES]): StewardProjectConfig {
+export function projectConfig(
+  fullName: string,
+  duties: string[] = [...DEFAULT_DUTIES],
+): StewardProjectConfig {
   return {
     version: 1,
     subject: { type: "github.repository", id: fullName },

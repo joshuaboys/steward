@@ -186,14 +186,18 @@ export const mergeConcierge: StewardApplication = {
       }
     }
 
-    const merged = await invoke(githubPullRequestMerge, {
-      number,
-      expectedHeadSha: current.headSha,
-    }, {
-      actionId: "merge_01",
-      summary: mergeAction.summary,
-      preconditions: mergeAction.preconditions,
-    });
+    const merged = await invoke(
+      githubPullRequestMerge,
+      {
+        number,
+        expectedHeadSha: current.headSha,
+      },
+      {
+        actionId: "merge_01",
+        summary: mergeAction.summary,
+        preconditions: mergeAction.preconditions,
+      },
+    );
 
     if (merged.approvalRequired && requestApproval) {
       const decision = await requestApproval(merged.action!);
@@ -204,14 +208,18 @@ export const mergeConcierge: StewardApplication = {
           mutations,
         };
       }
-      const retry = await invoke(githubPullRequestMerge, {
-        number,
-        expectedHeadSha: current.headSha,
-      }, {
-        actionId: "merge_01",
-        summary: mergeAction.summary,
-        preconditions: mergeAction.preconditions,
-      });
+      const retry = await invoke(
+        githubPullRequestMerge,
+        {
+          number,
+          expectedHeadSha: current.headSha,
+        },
+        {
+          actionId: "merge_01",
+          summary: mergeAction.summary,
+          preconditions: mergeAction.preconditions,
+        },
+      );
       if (retry.ok) {
         mutations.push("github.pull_request.merge");
         return {

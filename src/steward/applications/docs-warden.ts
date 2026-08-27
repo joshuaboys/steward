@@ -39,7 +39,8 @@ function loadMap(facts: Fact[]): Record<string, string[]> {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const map: Record<string, string[]> = {};
     for (const [code, docs] of Object.entries(value as Record<string, unknown>)) {
-      if (Array.isArray(docs)) map[code] = docs.filter((item): item is string => typeof item === "string");
+      if (Array.isArray(docs))
+        map[code] = docs.filter((item): item is string => typeof item === "string");
     }
     if (Object.keys(map).length > 0) return map;
   }
@@ -89,7 +90,11 @@ export const docsWarden: StewardApplication = {
     const map = loadMap(store.listFacts());
     const hits = mappedSurfaces(files, map);
     if (hits.length === 0) {
-      return { disposition: "ignored", summary: "no documented surface in this push", mutations: [] };
+      return {
+        disposition: "ignored",
+        summary: "no documented surface in this push",
+        mutations: [],
+      };
     }
 
     const findings: Array<{
@@ -140,7 +145,11 @@ export const docsWarden: StewardApplication = {
 
         store.putFact({
           key: `docs.surface.${hit.code}`,
-          value: { code: hit.code, docs: docsPath, sha: (event.payload as { after?: string }).after },
+          value: {
+            code: hit.code,
+            docs: docsPath,
+            sha: (event.payload as { after?: string }).after,
+          },
           sourceEventId: event.id,
           observedAt: nowIso(),
           updatedAt: nowIso(),
