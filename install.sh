@@ -17,6 +17,7 @@ Does not use npm.
   ./install.sh --uninstall
 
   curl -fsSL https://raw.githubusercontent.com/joshuaboys/steward/main/install.sh | sh
+  Windows: irm https://raw.githubusercontent.com/joshuaboys/steward/main/install.ps1 | iex
 EOF
 }
 
@@ -99,35 +100,6 @@ resolve_src() {
   fetch_tree
 }
 
-copy_tree() {
-  src=$1
-  dest=$2
-  rm -rf "$dest"
-  mkdir -p "$dest"
-  for item in apps bin docs scripts src package.json wrangler.jsonc README.md .dev.vars.example install.sh; do
-    if [ -e "$src/$item" ]; then
-      cp -R "$src/$item" "$dest/"
-    fi
-  done
-  if [ -f "$dest/.dev.vars.example" ] && [ ! -f "$dest/.dev.vars" ]; then
-    cp "$dest/.dev.vars.example" "$dest/.dev.vars"
-  fi
-  if [ -f "$dest/bin/steward.mjs" ]; then
-    chmod +x "$dest/bin/steward.mjs"
-  fi
-}
-
-write_wrapper() {
-  lib=$1
-  bin=$2
-  mkdir -p "$(dirname "$bin")"
-  cat > "$bin" <<EOF
-#!/bin/sh
-exec "$lib/bin/steward.mjs" "\$@"
-EOF
-  chmod +x "$bin"
-}
-
 UNINSTALL=0
 PREFIX_FLAG=
 while [ $# -gt 0 ]; do
@@ -166,27 +138,18 @@ BIN=${BIN_DIR}/steward
 
 if [ "$UNINSTALL" -eq 1 ]; then
   rm -rf "$LIB"
-  rm -f "$BIN"
-  echo "removed $LIB and $BIN"
+  rm -f "$BIN" "$BIN_DIR/steward.cmd"
+  echo "removed $LIB and wrappers in $BIN_DIR"
   exit 0
 fi
 
 need_node
 resolve_src
-copy_tree "$SRC" "$LIB"
-write_wrapper "$LIB" "$BIN"
+set +e
+node "$SRC/scripts/install.mjs" --prefix "$PREFIX"
+code=$?
+set -e
 if [ -n "$FETCH_TMP" ]; then
   rm -rf "$FETCH_TMP"
 fi
-
-echo "installed $BIN"
-echo "  lib   $LIB"
-echo "  node  $(node -v)"
-case ":$PATH:" in
-  *":$BIN_DIR:"*) ;;
-  *)
-    echo "Add $BIN_DIR to PATH, for example:"
-    echo "  export PATH=\"$BIN_DIR:\$PATH\""
-    ;;
-esac
-echo "run: steward help"
+exit $code

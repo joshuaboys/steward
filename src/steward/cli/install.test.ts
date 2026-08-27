@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { execFile } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -11,6 +11,8 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 const installSh = join(repoRoot, "install.sh");
+const installMjs = join(repoRoot, "scripts/install.mjs");
+const installPs1 = join(repoRoot, "install.ps1");
 
 async function withPrefix(fn: (prefix: string) => Promise<void>) {
   const prefix = await mkdtemp(join(tmpdir(), "steward-prefix-"));
@@ -81,4 +83,41 @@ test("install.sh refuses a Node older than 22.12", async () => {
     );
     assert.equal(existsSync(join(prefix, "bin", "steward")), false);
   });
+});
+
+test("scripts/install.mjs writes a Windows cmd wrapper when STEWARD_WRAPPER=cmd", async () => {
+  await withPrefix(async (prefix) => {
+    const { stdout } = await execFileAsync(process.execPath, [installMjs, "--prefix", prefix], {
+      env: installEnv(prefix, { STEWARD_WRAPPER: "cmd" }),
+    });
+    const cmd = join(prefix, "bin", "steward.cmd");
+    assert.ok(existsSync(cmd), stdout);
+    assert.equal(existsSync(join(prefix, "bin", "steward")), false);
+    const body = readFileSync(cmd, "utf8");
+    assert.match(body, /@echo off/i);
+    assert.match(body, /steward\.mjs/);
+    assert.doesNotMatch(body, /bin\/sh/);
+    assert.ok(existsSync(join(prefix, "lib", "steward", "install.ps1")));
+  });
+});
+
+test("scripts/install.mjs --uninstall removes sh and cmd wrappers", async () => {
+  await withPrefix(async (prefix) => {
+    await execFileAsync(process.execPath, [installMjs, "--prefix", prefix], {
+      env: installEnv(prefix, { STEWARD_WRAPPER: "cmd" }),
+    });
+    await execFileAsync(process.execPath, [installMjs, "--prefix", prefix, "--uninstall"], {
+      env: installEnv(prefix),
+    });
+    assert.equal(existsSync(join(prefix, "bin", "steward")), false);
+    assert.equal(existsSync(join(prefix, "bin", "steward.cmd")), false);
+    assert.equal(existsSync(join(prefix, "lib", "steward")), false);
+  });
+});
+
+test("install.ps1 is a PowerShell bootstrap", () => {
+  const body = readFileSync(installPs1, "utf8");
+  assert.match(body, /install\.mjs/);
+  assert.match(body, /Uninstall/);
+  assert.match(body, /NODE/i);
 });
