@@ -10,7 +10,7 @@
   },
   "scripts": {
     "setup": "node scripts/setup.mjs",
-    "test": "node --experimental-strip-types --test src/steward/steward.test.ts src/steward/cli/cli.test.ts",
+    "test": "node --experimental-strip-types --test src/steward/steward.test.ts src/steward/cli/cli.test.ts src/steward/cli/package-root.test.ts src/steward/cli/install.test.ts",
     "proof": "node --experimental-strip-types scripts/proof.mjs",
     "worker": "node bin/steward.mjs worker",
     "deploy": "node bin/steward.mjs deploy",

@@ -6,6 +6,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { StewardRuntime } from "../runtime.ts";
 import { runStewardCommand, type CliHost } from "./commands.ts";
+import { stewardPackageRoot, wranglerInvocation } from "./package-root.ts";
 import type { StewardProjectConfig } from "./config.ts";
 
 const execFileAsync = promisify(execFile);
@@ -76,10 +77,10 @@ async function main() {
   const command = argv[0];
 
   if (command === "worker" || command === "deploy") {
-    const wranglerArgs = command === "worker" ? ["dev"] : ["deploy"];
-    const child = spawn("npx", ["--yes", "wrangler@4", ...wranglerArgs], {
+    const inv = wranglerInvocation(command, stewardPackageRoot());
+    const child = spawn(inv.command, inv.args, {
       stdio: "inherit",
-      cwd: root,
+      cwd: inv.cwd,
       env: process.env,
     });
     child.on("exit", (code) => process.exit(code ?? 1));
